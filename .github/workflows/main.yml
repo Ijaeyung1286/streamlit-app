@@ -25,16 +25,24 @@ jobs:
         pip install -r requirements.txt
         pip install streamlit pyngrok
 
-    - name: Run Streamlit App with Ngrok
+    - name: Run Streamlit App in Background
       run: |
-        nohup streamlit run main.py --server.port 8501 &
-        sleep 10  # صبر برای اجرای برنامه
-        python -m pyngrok http 8501 > ngrok_output.txt &
-        sleep 10  # صبر برای تولید لینک Ngrok
+        nohup streamlit run main.py --server.port 8501 > streamlit_output.log 2>&1 &
+        sleep 10  # صبر برای اجرای Streamlit
 
-    - name: Extract and Display Ngrok URL
+    - name: Start Ngrok and Get URL
       run: |
-        NGROK_URL=$(grep -o 'https://[0-9a-z]*\.ngrok.io' ngrok_output.txt | head -1)
-        echo "========================================"
-        echo "Your Streamlit app is live at: $NGROK_URL"
-        echo "========================================"
+        python -c "
+from pyngrok import ngrok
+public_url = ngrok.connect(8501, bind_tls=True)
+print(f'NGROK_URL: {public_url.public_url}')
+with open('ngrok_output.txt', 'w') as f:
+    f.write(public_url.public_url)
+"
+        sleep 5  # صبر برای اطمینان از ذخیره لینک
+
+    - name: Display Ngrok URL
+      run: |
+        echo "============ NGROK OUTPUT ============"
+        cat ngrok_output.txt || echo 'Ngrok output file not found!'
+        echo "======================================"
