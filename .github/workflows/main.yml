@@ -17,7 +17,7 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.9'
+        python-version: '3.12'
 
     - name: Install Dependencies
       run: |
@@ -27,7 +27,7 @@ jobs:
 
     - name: Run Streamlit App with Ngrok
       run: |
-        nohup streamlit run app.py --server.port 8501 &
+        nohup streamlit run main.py --server.port 8501 &
         sleep 10  # صبر برای اجرای برنامه
         python -m pyngrok http 8501 > ngrok_output.txt &
         sleep 10  # صبر برای تولید لینک Ngrok
