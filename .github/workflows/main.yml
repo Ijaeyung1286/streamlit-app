@@ -1,4 +1,4 @@
-name: Streamlit App Deployment with Ngrok
+name: Streamlit App Deployment with Ngrok (Debug Mode)
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.12'
+        python-version: '3.9'
 
     - name: Install Dependencies
       run: |
@@ -27,17 +27,26 @@ jobs:
 
     - name: Run Streamlit App in Background
       run: |
-        nohup streamlit run main.py --server.port 8501 > streamlit_output.log 2>&1 &
+        nohup streamlit run app.py --server.port 8501 > streamlit_output.log 2>&1 &
         sleep 10  # صبر برای اجرای Streamlit
+
+    - name: Display Streamlit Logs
+      run: |
+        echo "============ STREAMLIT LOG ============"
+        cat streamlit_output.log || echo 'Streamlit log not found!'
+        echo "======================================"
 
     - name: Start Ngrok and Get URL
       run: |
         python -c "
 from pyngrok import ngrok
-public_url = ngrok.connect(8501, bind_tls=True)
-print(f'NGROK_URL: {public_url.public_url}')
-with open('ngrok_output.txt', 'w') as f:
-    f.write(public_url.public_url)
+try:
+    public_url = ngrok.connect(8501, bind_tls=True)
+    print(f'NGROK_URL: {public_url.public_url}')
+    with open('ngrok_output.txt', 'w') as f:
+        f.write(public_url.public_url)
+except Exception as e:
+    print(f'Error occurred: {e}')
 "
         sleep 5  # صبر برای اطمینان از ذخیره لینک
 
