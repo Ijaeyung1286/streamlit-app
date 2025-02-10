@@ -17,23 +17,24 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.12'  # نسخه پایتون مورد نیاز
+        python-version: '3.9'
 
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install streamlit pyngrok  # نصب Streamlit و Ngrok
+        pip install streamlit pyngrok
 
     - name: Run Streamlit App with Ngrok
       run: |
-        nohup streamlit run main.py --server.port 8501 &
-        sleep 10
+        nohup streamlit run app.py --server.port 8501 &
+        sleep 10  # صبر برای اجرای برنامه
         python -m pyngrok http 8501 > ngrok_output.txt &
-        sleep 10
-        cat ngrok_output.txt
-        
-    - name: Display Ngrok Public URL
+        sleep 10  # صبر برای تولید لینک Ngrok
+
+    - name: Extract and Display Ngrok URL
       run: |
         NGROK_URL=$(grep -o 'https://[0-9a-z]*\.ngrok.io' ngrok_output.txt | head -1)
+        echo "========================================"
         echo "Your Streamlit app is live at: $NGROK_URL"
+        echo "========================================"
